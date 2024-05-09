@@ -20,13 +20,14 @@ with open('es2en.csv', newline='', encoding='utf-8') as file:
         ens = set(ens_raw)
         for en in ens_raw:
             words = en.split(' ')
-            for i, word in enumerate(words):
-                if '/' in word:
-                    for option in word.split('/'):
-                        ens.add(' '.join(words[:i] + [option] + words[i+1:]))
-                elif word in pronoun_equivalents_map:
-                    for option in pronoun_equivalents_map[word]:
-                        ens.add(' '.join(words[:i] + [option] + words[i+1:]))
+            if len(words) > 1:
+                for i, word in enumerate(words):
+                    if '/' in word:
+                        for option in word.split('/'):
+                            ens.add(' '.join(words[:i] + [option] + words[i+1:]))
+                    elif word in pronoun_equivalents_map:
+                        for option in pronoun_equivalents_map[word]:
+                            ens.add(' '.join(words[:i] + [option] + words[i+1:]))
         es2en[es] = list(ens)
         for en in ens:
             en2es[en] = en2es.get(en, [])
