@@ -38,7 +38,7 @@ for i in range(100):
     word = random.choice(list(word_map.keys()))
     guess = input(f'{word}: ')
     if guess in word_map[word]:
-        print('  Yay!')
+        print('  Good job!')
         other_translations = [w for w in word_map[word] if w != guess]
         if other_translations:
             print('  other translations:', ', '.join(other_translations))
