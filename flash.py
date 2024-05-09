@@ -1,46 +1,55 @@
 import csv, random
 
+pronoun_equivalents = [
+    ['he', 'she', 'you-formal'], 
+    ['they', 'you-plural'],
+    ['him', 'her']
+]
+pronoun_equivalents_map = {}
+for ps in pronoun_equivalents:
+    for p in ps:
+        pronoun_equivalents_map[p] = ps
+
 es2en = {}
+en2es = {}
 with open('es2en.csv', newline='', encoding='utf-8') as file:
     reader = csv.reader(file)
     for row in reader:
         es = row[0]
-        ens = row[1:]
-        es2en[es] = ens
+        ens_raw = row[1:]
+        ens = set(ens_raw)
+        for en in ens_raw:
+            words = en.split(' ')
+            for i, word in enumerate(words):
+                if '/' in word:
+                    for option in word.split('/'):
+                        ens.add(' '.join(words[:i] + [option] + words[i+1:]))
+                elif word in pronoun_equivalents_map:
+                    for option in pronoun_equivalents_map[word]:
+                        ens.add(' '.join(words[:i] + [option] + words[i+1:]))
+        es2en[es] = list(ens)
+        for en in ens:
+            en2es[en] = en2es.get(en, [])
+            en2es[en].append(es)
 
-en2es = {}
-with open('en2es.csv', newline='', encoding='utf-8') as file:
-    reader = csv.reader(file)
-    for row in reader:
-        en = row[0]
-        ess = row[1:]
-        en2es[en] = ess
-
-def is_match(guess, answers):
-    if guess in answers:
-        return True
-    else:
-        guess_words = guess.split(' ')
-        for answer in answers:
-            answer_words = answer.split(' ')
-            for guess_word, answer_word in zip(guess_words, answer_words):
-                answer_word_possibilities = answer_word.split('/')
-                if guess_word not in answer_word_possibilities:
-                    break
-            else:
-                return True
-    return False
-
-for word_map in [en2es, es2en] * 5:
+correct = 0
+for i in range(100):
+    word_map = [en2es, es2en][i%2]
     word = random.choice(list(word_map.keys()))
     guess = input(f'{word}: ')
-    if is_match(guess, word_map[word]):
+    if guess in word_map[word]:
         print('  Yay!')
         other_translations = [w for w in word_map[word] if w != guess]
         if other_translations:
             print('  other translations:', ', '.join(other_translations))
         else:
-            print('  that\'s the only translation - great job!')
+            print('  that\'s the only translation you know')
+        correct += 1
     else: 
         print('  Nope!', )
-        print('  translations:', ', '.join(word_map[word]))
+        translations = word_map[word]
+        if len(translations) > 1:
+            print('  translations:', ', '.join(translations))
+        else:
+            print('  translation:', translations[0])
+    print(f'  {100 * correct/(i+1):.1f}% correct so far')
