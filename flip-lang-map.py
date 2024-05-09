@@ -1,3 +1,5 @@
+# utility to get english to spanish word mappings from 'es2en.csv' and write them to 'en2es.csv'
+
 import csv
 
 en2es = {}
